@@ -1,0 +1,53 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="scrop-admin-overview">
+  <div class="scrop-admin-overview-copy">
+    <h1>Admin Management</h1>
+    <p class="scrop-admin-subtitle">Manage tenants, users, agents, alerts, scheduler, and model providers.</p>
+  </div>
+  <div class="scrop-admin-overview-meta">
+    <span>System Control</span>
+    <span>{% now "D, M j Y H:i" %}</span>
+  </div>
+</section>
+
+<section class="scrop-admin-grid">
+  {% for app in app_list %}
+    <article class="scrop-admin-card app-{{ app.app_label }}">
+      <header>
+        <h2>{{ app.name }}</h2>
+        {% if app.app_url %}
+          <a href="{{ app.app_url }}">Open</a>
+        {% endif %}
+      </header>
+      <ul>
+        {% for model in app.models %}
+          <li>
+            <span>{{ model.name }}</span>
+            <div class="scrop-admin-actions">
+              {% if model.admin_url %}
+                <a href="{{ model.admin_url }}">Manage</a>
+              {% endif %}
+              {% if model.add_url %}
+                <a href="{{ model.add_url }}">Create</a>
+              {% endif %}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </article>
+  {% empty %}
+    <article class="scrop-admin-card">
+      <h2>No Admin Apps</h2>
+      <p class="scrop-admin-subtitle">No models are available for this account.</p>
+    </article>
+  {% endfor %}
+</section>
+{% endblock %}

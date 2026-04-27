@@ -1,0 +1,146 @@
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-scropids}
+      POSTGRES_USER: ${POSTGRES_USER:-scropids}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-scropids}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-scropids} -d ${POSTGRES_DB:-scropids}"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    image: ${SCROPIDS_BACKEND_IMAGE:-scropids/backend:demo}
+    restart: unless-stopped
+    command: gunicorn scropids.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-scropids-docker-demo-secret}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,0.0.0.0,backend}
+      SCROPIDS_ENCRYPTION_KEY: ${SCROPIDS_ENCRYPTION_KEY:-scropids-docker-demo-encryption-key}
+      USE_SQLITE: "False"
+      POSTGRES_DB: ${POSTGRES_DB:-scropids}
+      POSTGRES_USER: ${POSTGRES_USER:-scropids}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-scropids}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost,http://127.0.0.1,https://localhost,https://127.0.0.1}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-http://localhost,http://127.0.0.1,https://localhost,https://127.0.0.1}
+      SESSION_COOKIE_SECURE: "False"
+      CSRF_COOKIE_SECURE: "False"
+      SECURE_SSL_REDIRECT: "False"
+      SCROPIDS_ADMIN_LOCALHOST_ONLY: ${SCROPIDS_ADMIN_LOCALHOST_ONLY:-True}
+      SCROPIDS_ADMIN_LOCAL_HOSTS: ${SCROPIDS_ADMIN_LOCAL_HOSTS:-localhost,127.0.0.1,::1}
+      SCROPIDS_AGENT_ARTIFACTS_DIR: /app/agent_downloads
+      SCROPIDS_BOOTSTRAP_ENABLED: ${SCROPIDS_BOOTSTRAP_ENABLED:-True}
+      SCROPIDS_BOOTSTRAP_FORCE_RESET: ${SCROPIDS_BOOTSTRAP_FORCE_RESET:-False}
+      SCROPIDS_BOOTSTRAP_ADMIN_USERNAME: ${SCROPIDS_BOOTSTRAP_ADMIN_USERNAME:-admin}
+      SCROPIDS_BOOTSTRAP_ADMIN_PASSWORD: ${SCROPIDS_BOOTSTRAP_ADMIN_PASSWORD:-admin}
+      SCROPIDS_BOOTSTRAP_NORMAL_USERNAME: ${SCROPIDS_BOOTSTRAP_NORMAL_USERNAME:-normal}
+      SCROPIDS_BOOTSTRAP_NORMAL_PASSWORD: ${SCROPIDS_BOOTSTRAP_NORMAL_PASSWORD:-normal}
+      SCROPIDS_BOOTSTRAP_WORKSPACE_NAME: ${SCROPIDS_BOOTSTRAP_WORKSPACE_NAME:-ScropIDS Workspace}
+      SCROPIDS_BOOTSTRAP_NORMAL_ROLE: ${SCROPIDS_BOOTSTRAP_NORMAL_ROLE:-analyst}
+      SCROPIDS_BOOTSTRAP_LLM_PROVIDER_NAME: ${SCROPIDS_BOOTSTRAP_LLM_PROVIDER_NAME:-OpenRouter Gemma 4 31B Free}
+      SCROPIDS_BOOTSTRAP_LLM_PROVIDER_TYPE: ${SCROPIDS_BOOTSTRAP_LLM_PROVIDER_TYPE:-openai_compatible}
+      SCROPIDS_BOOTSTRAP_LLM_BASE_URL: ${SCROPIDS_BOOTSTRAP_LLM_BASE_URL:-https://openrouter.ai/api/v1}
+      SCROPIDS_BOOTSTRAP_LLM_MODEL: ${SCROPIDS_BOOTSTRAP_LLM_MODEL:-google/gemma-4-31b-it:free}
+      SCROPIDS_BOOTSTRAP_LLM_TIMEOUT_SECONDS: ${SCROPIDS_BOOTSTRAP_LLM_TIMEOUT_SECONDS:-60}
+      SCROPIDS_BOOTSTRAP_LLM_API_KEY: ${SCROPIDS_BOOTSTRAP_LLM_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/api/v1/health/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  worker:
+    image: ${SCROPIDS_BACKEND_IMAGE:-scropids/backend:demo}
+    restart: unless-stopped
+    entrypoint: []
+    command: celery -A scropids worker --loglevel=info
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-scropids-docker-demo-secret}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,0.0.0.0,backend}
+      SCROPIDS_ENCRYPTION_KEY: ${SCROPIDS_ENCRYPTION_KEY:-scropids-docker-demo-encryption-key}
+      USE_SQLITE: "False"
+      POSTGRES_DB: ${POSTGRES_DB:-scropids}
+      POSTGRES_USER: ${POSTGRES_USER:-scropids}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-scropids}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    depends_on:
+      backend:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  beat:
+    image: ${SCROPIDS_BACKEND_IMAGE:-scropids/backend:demo}
+    restart: unless-stopped
+    entrypoint: []
+    command: celery -A scropids beat --loglevel=info
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-scropids-docker-demo-secret}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,0.0.0.0,backend}
+      SCROPIDS_ENCRYPTION_KEY: ${SCROPIDS_ENCRYPTION_KEY:-scropids-docker-demo-encryption-key}
+      USE_SQLITE: "False"
+      POSTGRES_DB: ${POSTGRES_DB:-scropids}
+      POSTGRES_USER: ${POSTGRES_USER:-scropids}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-scropids}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    depends_on:
+      backend:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    image: ${SCROPIDS_FRONTEND_IMAGE:-scropids/frontend:demo}
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/healthz | grep -q ok || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:

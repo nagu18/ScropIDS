@@ -1,0 +1,322 @@
+:root {
+  --scrop-bg: #060b15;
+  --scrop-panel: #0c1322;
+  --scrop-panel-soft: #101a2d;
+  --scrop-border: #1f3251;
+  --scrop-text: #eaf1ff;
+  --scrop-muted: #9ab0d0;
+  --scrop-accent: #35d2ff;
+  --scrop-primary: #2f66de;
+}
+
+body {
+  background:
+    radial-gradient(circle at 15% 10%, rgba(53, 210, 255, 0.16), transparent 32%),
+    radial-gradient(circle at 85% 0%, rgba(47, 102, 222, 0.2), transparent 36%),
+    var(--scrop-bg);
+  color: var(--scrop-text);
+}
+
+#header {
+  background: rgba(9, 15, 28, 0.9);
+  border-bottom: 1px solid rgba(53, 210, 255, 0.25);
+  color: var(--scrop-text);
+}
+
+#branding h1,
+#branding h1 a:link,
+#branding h1 a:visited {
+  color: var(--scrop-text);
+  font-weight: 700;
+}
+
+.scrop-admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.scrop-admin-brand-text p {
+  margin: 0;
+  color: var(--scrop-muted);
+  font-size: 12px;
+}
+
+.scrop-admin-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(53, 210, 255, 0.4);
+  background:
+    radial-gradient(circle at 35% 35%, #89f0ff, #35d2ff 45%, #2f66de 90%);
+  box-shadow: 0 0 24px rgba(53, 210, 255, 0.26);
+}
+
+.scrop-admin-nav-global a,
+.scrop-admin-nav-global a:link,
+.scrop-admin-nav-global a:visited {
+  color: var(--scrop-muted);
+  text-decoration: none;
+}
+
+.scrop-admin-nav-global a:hover {
+  color: var(--scrop-accent);
+}
+
+div.breadcrumbs {
+  background: rgba(8, 13, 25, 0.9);
+  border-bottom: 1px solid rgba(53, 210, 255, 0.2);
+  color: var(--scrop-muted);
+}
+
+div.breadcrumbs a {
+  color: var(--scrop-accent);
+}
+
+#content,
+#content-main {
+  color: var(--scrop-text);
+}
+
+.module {
+  background: linear-gradient(180deg, var(--scrop-panel) 0%, var(--scrop-panel-soft) 100%);
+  border: 1px solid var(--scrop-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+  background: rgba(53, 210, 255, 0.12);
+  color: var(--scrop-text);
+  border-bottom: 1px solid rgba(53, 210, 255, 0.24);
+}
+
+.dashboard .module table td a,
+.dashboard .module table th a,
+a:link,
+a:visited {
+  color: #8ed8ff;
+}
+
+a:hover {
+  color: #b6e9ff;
+}
+
+input,
+textarea,
+select,
+.vTextField {
+  background: #0b1424;
+  border: 1px solid var(--scrop-border);
+  color: var(--scrop-text);
+  border-radius: 8px;
+}
+
+input:focus,
+textarea:focus,
+select:focus,
+.vTextField:focus {
+  border-color: var(--scrop-accent);
+  box-shadow: 0 0 0 2px rgba(53, 210, 255, 0.2);
+}
+
+.button,
+input[type="submit"],
+input[type="button"],
+.submit-row input,
+a.button {
+  background: linear-gradient(180deg, #3c78f7 0%, #2f66de 100%);
+  border: 0;
+  color: #fff;
+  border-radius: 8px;
+}
+
+.button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover,
+.submit-row input:hover,
+a.button:hover {
+  background: linear-gradient(180deg, #4b86ff 0%, #3a73e6 100%);
+}
+
+.submit-row {
+  background: rgba(8, 13, 25, 0.95);
+  border: 1px solid rgba(53, 210, 255, 0.2);
+  border-radius: 12px;
+}
+
+tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.selector select {
+  min-height: 240px;
+}
+
+.messagelist li {
+  border-radius: 10px;
+  border: 1px solid rgba(53, 210, 255, 0.2);
+}
+
+.scrop-admin-subtitle {
+  margin-top: 8px;
+  color: var(--scrop-muted);
+  font-size: 14px;
+}
+
+.scrop-admin-overview {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+  padding: 18px 20px;
+  border: 1px solid var(--scrop-border);
+  border-radius: 14px;
+  background: linear-gradient(130deg, rgba(53, 210, 255, 0.07), rgba(47, 102, 222, 0.06));
+}
+
+.scrop-admin-overview h1 {
+  margin: 0;
+}
+
+.scrop-admin-overview-meta {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  color: var(--scrop-muted);
+  font-size: 12px;
+  gap: 4px;
+}
+
+.scrop-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.scrop-admin-card {
+  border: 1px solid var(--scrop-border);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(12, 19, 34, 0.96), rgba(10, 17, 30, 0.96));
+  overflow: hidden;
+}
+
+.scrop-admin-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(53, 210, 255, 0.2);
+}
+
+.scrop-admin-card header h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.scrop-admin-card header a {
+  font-size: 12px;
+  text-decoration: none;
+  border: 1px solid rgba(53, 210, 255, 0.35);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.scrop-admin-card ul {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+}
+
+.scrop-admin-card li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(53, 210, 255, 0.14);
+  background: rgba(53, 210, 255, 0.03);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 8px 0;
+}
+
+.scrop-admin-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.scrop-admin-actions a {
+  text-decoration: none;
+  border: 1px solid rgba(53, 210, 255, 0.25);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+body.login #container {
+  background: transparent;
+}
+
+body.login #content {
+  max-width: 980px;
+  margin: 42px auto;
+}
+
+body.login .form-row {
+  margin-bottom: 14px;
+}
+
+body.login .submit-row {
+  padding: 12px 14px;
+}
+
+.scrop-admin-login-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+}
+
+.scrop-admin-login-card {
+  width: min(480px, 100%);
+  border: 1px solid var(--scrop-border);
+  border-radius: 18px;
+  padding: 22px;
+  background: linear-gradient(180deg, rgba(12, 19, 34, 0.95), rgba(10, 17, 30, 0.95));
+  box-shadow: 0 20px 60px rgba(1, 4, 12, 0.5);
+}
+
+.scrop-admin-login-head h1 {
+  margin: 0 0 8px;
+  font-size: 24px;
+}
+
+.scrop-admin-login-head p {
+  margin: 0 0 18px;
+  color: var(--scrop-muted);
+}
+
+body.login #login-form .form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+body.login #login-form .form-row label {
+  color: var(--scrop-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 12px;
+}
+
+@media (max-width: 880px) {
+  .scrop-admin-overview {
+    flex-direction: column;
+  }
+
+  .scrop-admin-overview-meta {
+    text-align: left;
+  }
+}

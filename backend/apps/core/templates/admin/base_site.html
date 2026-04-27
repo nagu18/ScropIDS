@@ -1,0 +1,25 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}ScropIDS Admin{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'core/admin-theme.css' %}">
+{% endblock %}
+
+{% block branding %}
+<div class="scrop-admin-brand">
+  <span class="scrop-admin-logo" aria-hidden="true"></span>
+  <div class="scrop-admin-brand-text">
+    <h1 id="site-name"><a href="{% url 'admin:index' %}">ScropIDS Admin</a></h1>
+    <p>Control and operations workspace</p>
+  </div>
+</div>
+{% endblock %}
+
+{% block nav-global %}
+<div class="scrop-admin-nav-global">
+  <a href="/" target="_blank" rel="noreferrer">Open App</a>
+</div>
+{% endblock %}
