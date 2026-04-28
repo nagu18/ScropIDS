@@ -42,16 +42,22 @@ create_readme() {
 ScropIDS Agent
 
 Quick Start:
-1) Set environment:
+1) Recommended: use the Quick Run Command from the ScropIDS web UI.
+   It pre-fills:
    SCROPIDS_API_BASE=https://your-domain/api/v1
    SCROPIDS_ORG_SLUG=your-organization-slug
-   SCROPIDS_ENROLLMENT_TOKEN=your-one-time-enrollment-token
+   SCROPIDS_ORG_ACCESS_TOKEN=your-organization-access-token
 
 2) Run:
    - Linux/macOS: ./scropids-agent
    - Windows: .\\scropids-agent.exe
 
-The agent enrolls once, then syncs scheduler profile from server and sends telemetry.
+3) If you prefer guided setup:
+   - Linux/macOS: ./scropids-agent --setup
+   - Windows: .\\scropids-agent.exe --setup
+
+The agent auto-enrolls once, then syncs scheduler profile from the server and sends telemetry.
+If saved credentials become stale after a backend reset, the agent will try to re-enroll automatically.
 EOF
 }
 
@@ -124,8 +130,17 @@ create_dmg() {
     echo " ! hdiutil not found; skipping dmg for darwin/${goarch}"
     return
   fi
+  local raw_dmg="${WORK_DIR}/scropids-agent-darwin-${goarch}.raw.dmg"
   local dmg_file="${OUTPUT_DIR}/scropids-agent-darwin-${goarch}.dmg"
-  hdiutil create -quiet -volname "ScropIDS Agent ${goarch}" -srcfolder "${pkg_dir}" -ov -format UDZO "${dmg_file}"
+  hdiutil create -quiet -volname "ScropIDS Agent ${goarch}" -srcfolder "${pkg_dir}" -ov -format UDZO "${raw_dmg}"
+  # Materialize the DMG into a plain file so Docker preserves the footer bytes
+  # correctly when the backend image is built on macOS hosts.
+  cat "${raw_dmg}" > "${dmg_file}"
+  chmod 0644 "${dmg_file}"
+  if command -v xattr >/dev/null 2>&1; then
+    xattr -c "${dmg_file}" || true
+  fi
+  hdiutil verify "${dmg_file}" >/dev/null
   create_sha_file "${dmg_file}"
 }
 

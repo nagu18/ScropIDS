@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Report-CSE435</title>
+    <style>
+      @page {
+        size: A4;
+        margin: 1in 1in 1in 1.25in;
+      }
+
+      :root {
+        --text: #111111;
+        --muted: #555555;
+        --border: #222222;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--text);
+        font-family: "Times New Roman", Times, serif;
+        font-size: 12pt;
+        line-height: 1.5;
+        background: white;
+      }
+
+      main {
+        width: 100%;
+      }
+
+      .page {
+        break-after: page;
+      }
+
+      .page:last-child {
+        break-after: auto;
+      }
+
+      .cover {
+        min-height: 9.5in;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .cover-inner {
+        width: 100%;
+      }
+
+      .cover h1,
+      .cover h2,
+      .cover h3,
+      .cover p {
+        margin: 0;
+      }
+
+      .cover .title {
+        font-size: 18pt;
+        font-weight: 700;
+        margin-bottom: 0.9cm;
+      }
+
+      .cover .subtitle {
+        font-size: 16pt;
+        font-weight: 700;
+        margin-bottom: 0.5cm;
+      }
+
+      .cover .topic {
+        font-size: 16pt;
+        font-weight: 700;
+      }
+
+      .cover .spacer-sm {
+        height: 0.5cm;
+      }
+
+      .cover .spacer-md {
+        height: 0.9cm;
+      }
+
+      .cover .spacer-lg {
+        height: 1.2cm;
+      }
+
+      .cover .label {
+        font-size: 14pt;
+        font-weight: 700;
+      }
+
+      .cover .value {
+        font-size: 12pt;
+      }
+
+      .center {
+        text-align: center;
+      }
+
+      .chapter-page h1,
+      .declaration h1,
+      .toc h1,
+      .appendix h1 {
+        font-size: 14pt;
+        font-weight: 700;
+        margin: 0 0 0.4cm;
+        text-align: left;
+      }
+
+      h2 {
+        font-size: 14pt;
+        font-weight: 700;
+        margin: 0.4cm 0 0.2cm;
+        text-align: left;
+      }
+
+      h3 {
+        font-size: 14pt;
+        font-weight: 700;
+        margin: 0.35cm 0 0.2cm;
+        text-align: left;
+      }
+
+      p {
+        margin: 0 0 0.28cm;
+        text-align: justify;
+      }
+
+      ul,
+      ol {
+        margin: 0 0 0.35cm 1.1cm;
+        padding: 0;
+      }
+
+      li {
+        margin: 0 0 0.16cm;
+        text-align: justify;
+      }
+
+      .toc ul {
+        list-style: none;
+        margin-left: 0;
+      }
+
+      .toc li {
+        margin-bottom: 0.18cm;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0.25cm 0 0.45cm;
+        table-layout: fixed;
+      }
+
+      caption {
+        caption-side: top;
+        text-align: center;
+        font-weight: 700;
+        margin-bottom: 0.18cm;
+      }
+
+      th,
+      td {
+        border: 1px solid var(--border);
+        padding: 0.18cm 0.2cm;
+        vertical-align: top;
+        text-align: justify;
+      }
+
+      th {
+        text-align: left;
+        font-weight: 700;
+      }
+
+      .pipeline-box {
+        border: 1.5px solid var(--border);
+        padding: 0.35cm 0.45cm;
+        margin: 0.35cm auto 0.45cm;
+      }
+
+      .pipeline-box strong {
+        display: block;
+        margin-bottom: 0.15cm;
+      }
+
+      .field-line {
+        margin-top: 0.45cm;
+      }
+
+      .field-label {
+        display: inline-block;
+        min-width: 2.6in;
+      }
+
+      .blank-line {
+        display: inline-block;
+        width: 3in;
+        border-bottom: 1px solid var(--text);
+        height: 0.9em;
+        vertical-align: bottom;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="page cover">
+        <div class="cover-inner">
+          <p class="title">Seminar Report</p>
+          <p class="subtitle">On</p>
+          <p class="topic">ScropIDS: A Multi-Tenant Cloud-Native Intrusion Detection</p>
+          <p class="topic">Platform with Scheduler-Driven Aggregation and</p>
+          <p class="topic">LLM-Assisted Threat Triage</p>
+
+          <div class="spacer-lg"></div>
+
+          <p class="label">Submitted by</p>
+          <div class="spacer-sm"></div>
+          <p class="label">Konda Nagendar</p>
+          <p class="value">Registration No. A1907506027</p>
+
+          <div class="spacer-md"></div>
+
+          <p class="value">Bachelor of Technology</p>
+          <p class="value">IN</p>
+          <p class="value">Computer Science and Engineering</p>
+
+          <div class="spacer-md"></div>
+
+          <p class="label">Under the Supervision of</p>
+          <div class="spacer-sm"></div>
+          <p class="value">[Faculty Name]</p>
+          <p class="value">[Designation]</p>
+
+          <div class="spacer-lg"></div>
+
+          <p class="label">LOVELY PROFESSIONAL UNIVERSITY</p>
+          <p class="label">PUNJAB</p>
+          <div class="spacer-sm"></div>
+          <p class="value">(April, 2026)</p>
+        </div>
+      </section>
+
+      <section class="page declaration">
+        <h1>DECLARATION</h1>
+        <p>
+          I hereby declare that the seminar report titled
+          <em>ScropIDS: A Multi-Tenant Cloud-Native Intrusion Detection Platform with
+          Scheduler-Driven Aggregation and LLM-Assisted Threat Triage</em> submitted in
+          partial fulfillment of the requirements for the award of the degree of Bachelor
+          of Technology in Computer Science and Engineering is a record of my own work
+          carried out during the academic session 2025-2026.
+        </p>
+        <p>
+          I further declare that this report has not been submitted, either in part or in
+          full, to any other institution or university for the award of any degree or
+          diploma.
+        </p>
+        <p>
+          I confirm that the content of this report is original and prepared by me. Any
+          references used have been duly acknowledged. I also declare that the use of
+          Artificial Intelligence tools, if any, has been limited to drafting support and
+          formatting assistance, while the subject understanding, analysis, organization of
+          ideas, and final academic responsibility remain my own.
+        </p>
+        <p>
+          I take full responsibility for the authenticity and originality of the work
+          presented in this report.
+        </p>
+
+        <div class="field-line"><span class="field-label">Name of the Student:</span> Konda Nagendar</div>
+        <div class="field-line"><span class="field-label">Registration Number:</span> A1907506027</div>
+        <div class="field-line"><span class="field-label">Course:</span> CSE435 - Comprehensive Seminar</div>
+        <div class="field-line"><span class="field-label">Signature of the Student:</span><span class="blank-line"></span></div>
+        <div class="field-line"><span class="field-label">Date:</span><span class="blank-line"></span></div>
+      </section>
+
+      <section class="page toc">
+        <h1>TABLE OF CONTENTS</h1>
+        <ul>
+          <li>Declaration</li>
+          <li>Chapter 1: Introduction</li>
+          <li>Chapter 2: Literature Review</li>
+          <li>Chapter 3: Conceptual Study / Seminar Work</li>
+          <li>Chapter 4: Results and Discussion</li>
+          <li>Chapter 5: Conclusion and Future Scope</li>
+          <li>Professional Profile &amp; Repository Details</li>
+          <li>References</li>
+        </ul>
+      </section>
+
+      <section class="page chapter-page">
+        <h1>Chapter 1 Introduction</h1>
+
+        <h2>1.1 Title of the Seminar Topic</h2>
+        <p>
+          The topic of this seminar report is <em>ScropIDS: A Multi-Tenant Cloud-Native
+          Intrusion Detection Platform with Scheduler-Driven Aggregation and
+          LLM-Assisted Threat Triage</em>. The work studies how a modern intrusion
+          detection workflow can be designed as a cloud-native platform instead of a
+          collection of disconnected logs, scripts, and analyst-heavy review steps.
+        </p>
+
+        <h2>1.2 Background and Importance of the Topic</h2>
+        <p>
+          Organizations now generate large volumes of endpoint activity data through
+          laptops, workstations, servers, and virtual machines. Process launches,
+          authentication attempts, network connections, and system events can all provide
+          early signs of malicious behavior. The difficulty is not only collecting these
+          events; it is converting them into findings that are understandable, prioritized,
+          and useful for analysts.
+        </p>
+        <p>
+          Traditional security monitoring stacks often separate collection, storage,
+          analysis, and presentation into different operational tools. This fragmentation
+          increases analyst overhead, creates inconsistent workflows, and makes it
+          difficult to enforce clear tenant boundaries when the same monitoring platform is
+          shared across multiple organizations. As a result, intrusion detection remains
+          technically powerful but operationally noisy for many teams.
+        </p>
+        <p>
+          The importance of the seminar topic lies in its attempt to address that gap.
+          ScropIDS combines endpoint telemetry, secure agent onboarding, tenant-aware
+          storage, scheduled aggregation, rule-based escalation, optional large language
+          model assistance, and dashboard visibility inside a single platform. It is
+          therefore relevant to cybersecurity operations, cloud-native software
+          engineering, distributed systems, and practical product design.
+        </p>
+
+        <h2>1.3 Objectives of the Seminar</h2>
+        <ol>
+          <li>Study the architecture of a modern intrusion detection platform built as a multi-tenant application.</li>
+          <li>Understand how endpoint telemetry can be collected, normalized, stored, and analyzed in a structured workflow.</li>
+          <li>Examine how scheduling, aggregation, and alert triage reduce noise compared with raw log review.</li>
+          <li>Review the role of optional LLM-assisted reasoning in producing explainable threat summaries.</li>
+          <li>Evaluate the strengths, limitations, and future scope of the ScropIDS approach.</li>
+        </ol>
+
+        <h2>1.4 Brief Overview of the Methodology Used</h2>
+        <p>
+          The seminar work was carried out by examining the ScropIDS repository
+          structure, technical documentation, implementation layout, and operational
+          workflow. Particular attention was given to the Django backend, the React
+          dashboard, the Go-based agent starter, the scheduler-driven aggregation model,
+          and the LLM integration layer.
+        </p>
+        <p>
+          The study also used a comparative approach. Existing categories such as
+          host-based intrusion detection systems, SIEM platforms, and commercial endpoint
+          detection solutions were reviewed at a conceptual level. Their common strengths
+          and limitations were then compared with the design priorities visible in
+          ScropIDS.
+        </p>
+        <p>
+          This report therefore combines literature-oriented discussion with
+          repository-grounded technical analysis. It is not limited to theory, because the
+          platform exists as a real implementation; at the same time, it is structured as
+          a seminar report rather than an exhaustive product manual.
+        </p>
+      </section>
+
+      <section class="page chapter-page">
+        <h1>Chapter 2 Literature Review</h1>
+
+        <h2>2.1 Intrusion Detection as a Security Discipline</h2>
+        <p>
+          Intrusion detection systems are designed to identify suspicious activity across
+          hosts, users, applications, or networks. Early IDS approaches were highly
+          signature-oriented, focusing on known patterns and rule triggers. Over time,
+          organizations adopted richer telemetry pipelines in order to capture behavior
+          that is anomalous, repeated, or contextually risky even when no single event
+          appears dangerous in isolation.
+        </p>
+        <p>
+          Two long-standing problems remain common. First, monitoring systems often
+          generate more raw data than analysts can review effectively. Second, the
+          operational context required to interpret alerts is frequently missing or
+          scattered. These problems motivate the study of IDS designs that prioritize not
+          only detection, but also explainability and workflow usability.
+        </p>
+
+        <h2>2.2 Host-Based IDS Platforms</h2>
+        <p>
+          Open-source host-based platforms such as OSSEC and Wazuh demonstrate the value
+          of agent-driven monitoring. They collect endpoint-relevant data, apply rules,
+          and surface alerts with practical security value. Their continued popularity
+          shows that endpoint telemetry remains one of the most useful sources for early
+          detection.
+        </p>
+        <p>
+          At the same time, these platforms are not always designed around lightweight
+          multi-tenant SaaS requirements. Turning them into a tenant-aware product with
+          self-service onboarding, per-tenant configuration, downloadable agents, and
+          application-native dashboard flows often requires substantial customization.
+          This limitation is one of the reasons why ScropIDS is an interesting seminar
+          topic.
+        </p>
+
+        <h2>2.3 SIEM and Security Analytics Platforms</h2>
+        <p>
+          Platforms such as Splunk and Elastic Security emphasize large-scale ingestion,
+          correlation, search, dashboarding, and alerting. They are valuable reference
+          points because they show how central visibility and retained telemetry can
+          improve investigations. Their operational strength is breadth, but that breadth
+          often brings cost, tuning effort, and deployment complexity.
+        </p>
+        <p>
+          For smaller environments, academic projects, and focused SaaS-style security
+          tooling, a lighter and more purpose-built system may be preferable. ScropIDS
+          borrows the idea of centralized collection and alert review from this class of
+          tools, while keeping the architecture narrower and easier to reason about within
+          a student-led implementation.
+        </p>
+
+        <h2>2.4 Commercial EDR and AI-Assisted Triage</h2>
+        <p>
+          Commercial endpoint detection and response platforms provide mature detection
+          logic, rich telemetry, and polished investigation workflows. They also
+          increasingly use machine learning or guided reasoning to help analysts
+          prioritize alerts. Their value is clear, but their internals are often closed,
+          their licensing models are restrictive, and they are not always suitable as
+          transparent academic study artifacts.
+        </p>
+        <p>
+          Recent research and industry practice also show growing interest in
+          LLM-assisted triage, where structured telemetry is summarized into human-readable
+          reasoning. This approach is promising because it can reduce the distance between
+          raw event streams and analyst action. However, it must be handled carefully
+          through strict schemas, validation, and fallback logic so that generated
+          explanations remain operationally safe.
+        </p>
+
+        <h2>2.5 Research Gap and Motivation</h2>
+        <p>
+          The literature and tool landscape suggest a gap between powerful detection
+          components and usable, tenant-aware operational delivery. Many systems can
+          collect logs. Many systems can store data. Some systems can explain alerts.
+          Fewer systems combine secure multi-tenant onboarding, endpoint-to-cloud
+          ingestion, scheduler-driven aggregation, explainable alert generation, flexible
+          support for hosted or local reasoning engines, and a unified web console.
+        </p>
+        <p>
+          ScropIDS addresses this gap by connecting these pieces into one platform. That
+          is the primary reason it is a strong subject for seminar study.
+        </p>
+
+        <table>
+          <caption>Table 2.1 Comparison of common approaches and the ScropIDS focus</caption>
+          <thead>
+            <tr>
+              <th>Approach</th>
+              <th>Common Strength</th>
+              <th>Common Limitation in This Context</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Host-based IDS</td>
+              <td>Strong endpoint visibility and rule-driven alerts</td>
+              <td>Limited application-native multi-tenant product flow</td>
+            </tr>
+            <tr>
+              <td>SIEM platforms</td>
+              <td>Centralized storage, search, and dashboards</td>
+              <td>Higher operational complexity for focused academic or pilot-scale use</td>
+            </tr>
+            <tr>
+              <td>Commercial EDR</td>
+              <td>Mature detection and response workflows</td>
+              <td>Closed implementation and limited academic transparency</td>
+            </tr>
+            <tr>
+              <td>ScropIDS focus</td>
+              <td>Unified tenant-aware pipeline from agent to dashboard</td>
+              <td>Current scope is narrower than full enterprise EDR suites</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="page chapter-page">
+        <h1>Chapter 3 Conceptual Study / Seminar Work</h1>
+
+        <h2>3.1 Overview of ScropIDS</h2>
+        <p>
+          ScropIDS is a cloud-native intrusion detection platform designed to receive
+          normalized events from endpoint agents, process those events in tenant-scoped
+          storage, aggregate them into meaningful windows, and generate explainable
+          alerts for analysts. The platform is production-oriented in the sense that it is
+          organized as a monorepo with backend, frontend, agent, and deployment
+          components rather than a single proof-of-concept script.
+        </p>
+        <p>
+          The backend is built with Django and Django REST Framework. It exposes
+          authenticated APIs for organization management, agent onboarding, event
+          ingestion, configuration, and alert retrieval. The frontend is implemented with
+          React, Vite, and TypeScript, providing pages for alerts, agents, rules,
+          scheduler configuration, enrollment tokens, and LLM provider settings. The
+          agent starter is implemented in Go so that cross-platform packaging can be
+          supported for Windows, Linux, and macOS.
+        </p>
+
+        <h2>3.2 Conceptual Framework and Workflow</h2>
+        <ol>
+          <li>A user creates or joins an organization in the tenant-aware dashboard.</li>
+          <li>An enrollment token or organization access token is generated for endpoint onboarding.</li>
+          <li>An endpoint agent enrolls, receives credentials, and begins submitting normalized events.</li>
+          <li>The backend stores those events with organization ownership and validation controls.</li>
+          <li>The scheduler groups unprocessed events into analysis windows at configured intervals.</li>
+          <li>Rule logic and optional LLM analysis convert those windows into explainable findings.</li>
+          <li>Alerts appear in the dashboard for analyst review and action.</li>
+        </ol>
+
+        <div class="pipeline-box">
+          <strong>Conceptual Pipeline</strong>
+          Endpoint Agent -&gt; Secure Ingest API -&gt; Event Store -&gt; Scheduler -&gt;
+          Aggregation -&gt; Rules / LLM Analysis -&gt; Alerts Dashboard
+        </div>
+
+        <h2>3.3 System Modules and Responsibilities</h2>
+        <p>
+          The ScropIDS seminar work revolves around several clearly separated modules
+          whose responsibilities are visible in the repository design.
+        </p>
+        <table>
+          <caption>Table 3.1 Major modules studied in ScropIDS</caption>
+          <thead>
+            <tr>
+              <th>Module</th>
+              <th>Role in the Platform</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Backend API</td>
+              <td>Accepts dashboard and agent requests, applies validation, stores tenant-aware records, and exposes operational endpoints</td>
+            </tr>
+            <tr>
+              <td>Scheduler and pipeline services</td>
+              <td>Aggregate event windows, trigger analysis, and create alerts based on threshold rules</td>
+            </tr>
+            <tr>
+              <td>LLM service layer</td>
+              <td>Supports OpenAI-compatible and local inference paths with strict JSON validation</td>
+            </tr>
+            <tr>
+              <td>Frontend dashboard</td>
+              <td>Provides visibility into alerts, agents, onboarding tokens, rules, and platform configuration</td>
+            </tr>
+            <tr>
+              <td>Go agent starter</td>
+              <td>Handles endpoint enrollment, configuration sync, event batching, and cross-platform packaging workflow</td>
+            </tr>
+            <tr>
+              <td>Docker deployment</td>
+              <td>Supports reproducible local or pilot-scale deployment with composed services</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>3.4 Tools, Platforms, and Technologies Studied</h2>
+        <p>
+          The seminar topic is also significant because it brings together a complete
+          modern stack rather than a single isolated technology. The following
+          technologies are central to the system.
+        </p>
+        <table>
+          <caption>Table 3.2 Technology stack used in the platform</caption>
+          <thead>
+            <tr>
+              <th>Technology</th>
+              <th>Use in ScropIDS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Django and DRF</td>
+              <td>Core API framework, tenancy-aware views, authentication, and serialization</td>
+            </tr>
+            <tr>
+              <td>PostgreSQL</td>
+              <td>Persistent structured storage for events, alerts, organizations, and configuration records</td>
+            </tr>
+            <tr>
+              <td>Celery and Redis</td>
+              <td>Background scheduling and asynchronous aggregation workflow</td>
+            </tr>
+            <tr>
+              <td>React, Vite, TypeScript</td>
+              <td>Analyst-facing dashboard and administrative interface</td>
+            </tr>
+            <tr>
+              <td>Go</td>
+              <td>Endpoint agent starter and cross-platform packaging workflow</td>
+            </tr>
+            <tr>
+              <td>Docker Compose</td>
+              <td>Reproducible deployment for integrated demonstration and testing</td>
+            </tr>
+            <tr>
+              <td>OpenAI-compatible APIs / Ollama</td>
+              <td>Optional model-assisted alert reasoning and triage</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2>3.5 Multi-Tenancy, Security, and Explainability</h2>
+        <p>
+          One of the strongest conceptual features of ScropIDS is that multi-tenancy is
+          not treated as an afterthought. Core records such as organizations, agents,
+          events, aggregates, and alerts are tenant-scoped, which reduces the risk of
+          operational confusion and data leakage in shared deployments. Dashboard access
+          is resolved through user membership and organization context, while agent access
+          uses explicit credential pairs for ingest requests.
+        </p>
+        <p>
+          Security controls are also present in the handling of enrollment tokens,
+          organization access tokens, and provider secrets. The design emphasizes
+          authenticated onboarding, tenant ownership, and encryption for sensitive
+          configuration such as API keys. This is important because intrusion detection
+          platforms process operationally sensitive data and must therefore protect not
+          only the monitored systems, but also the platform itself.
+        </p>
+        <p>
+          Explainability is another key seminar theme. Instead of treating model output as
+          unrestricted free text, ScropIDS expects structured JSON responses for threat
+          level, confidence, reasoning, and recommended action. This allows
+          model-assisted analysis to remain bounded, reviewable, and easier to integrate
+          with deterministic alert pipelines.
+        </p>
+
+        <h2>3.6 Repository Structure as Evidence of the Seminar Work</h2>
+        <p>
+          The project repository itself provides evidence that the topic is implemented
+          beyond theory. The monorepo contains a backend application, frontend dashboard,
+          Go agent starter, Docker deployment files, and supporting documentation such as
+          architecture notes, API contract details, and startup guidance. This makes the
+          seminar especially valuable because the conceptual ideas are grounded in a real
+          engineering artifact.
+        </p>
+      </section>
+
+      <section class="page chapter-page">
+        <h1>Chapter 4 Results and Discussion</h1>
+
+        <h2>4.1 Key Observations Derived from the Study</h2>
+        <p>
+          The first major observation is that aggregation is central to usability. Raw
+          telemetry is often too granular for direct analyst review, but scheduler-driven
+          grouping turns repeated low-level events into more meaningful windows. This
+          reduces noise and creates a better foundation for both rules and model-assisted
+          reasoning.
+        </p>
+        <p>
+          The second observation is that tenant isolation influences almost every
+          architectural decision. Once multiple organizations share the same service,
+          ownership, query scoping, configuration boundaries, and agent onboarding must
+          all be designed carefully. ScropIDS demonstrates this principle by making
+          organizations a first-class part of the data model and request flow.
+        </p>
+        <p>
+          The third observation is that explainable summaries are operationally more
+          valuable than alert labels alone. A threat level without reasoning still forces
+          analysts to reconstruct the story from raw logs. ScropIDS improves this by
+          pairing aggregation with structured reasoning fields and recommended next
+          actions.
+        </p>
+
+        <h2>4.2 Conceptual Analysis of the Platform</h2>
+        <p>
+          The study suggests that ScropIDS is strongest when viewed as a workflow platform
+          rather than only a detection engine. Its value comes from the continuity of
+          steps: onboarding, ingest, aggregation, analysis, alerting, and dashboard
+          review. Each of these stages is meaningful on its own, but the combined flow is
+          what creates a practical intrusion detection experience.
+        </p>
+        <p>
+          Another important discussion point is flexibility. Some environments prefer
+          hosted AI APIs for convenience, while others may require local inference for
+          cost or privacy reasons. The dual-mode LLM support in ScropIDS is therefore not
+          just a feature addition; it is an architectural decision that improves
+          adaptability across different deployment contexts.
+        </p>
+
+        <h2>4.3 Advantages</h2>
+        <ul>
+          <li>A clear end-to-end pipeline from endpoint telemetry to analyst-facing alerts.</li>
+          <li>Support for Windows, Linux, and macOS agent packaging at the platform design level.</li>
+          <li>Tenant-aware onboarding and scoped storage that suit shared deployments.</li>
+          <li>Flexible analysis path combining deterministic rules with optional LLM assistance.</li>
+          <li>A dashboard-driven operational experience instead of a log-only workflow.</li>
+          <li>Reproducible deployment through containerized services.</li>
+        </ul>
+
+        <h2>4.4 Limitations and Constraints</h2>
+        <p>
+          The study also reveals practical limitations. ScropIDS is not yet a replacement
+          for a mature enterprise EDR suite with kernel-level visibility, broad threat
+          intelligence feeds, or incident response automation. The value of alerts still
+          depends on the quality and breadth of collected endpoint events. Model-assisted
+          triage can improve explanations, but it must remain advisory and carefully
+          validated.
+        </p>
+        <p>
+          There are also natural product-maturity constraints. A starter agent and a
+          production-oriented architecture establish a strong base, but further work is
+          required for richer collectors, larger-scale telemetry handling, deeper
+          analytics, and more complete role-based access controls.
+        </p>
+
+        <h2>4.5 Insights Gained During the Seminar</h2>
+        <p>
+          This seminar demonstrates that effective intrusion detection is as much a
+          systems design problem as it is a security problem. Good detection requires not
+          only rules or models, but also reliable ingestion, correct data boundaries,
+          efficient processing intervals, usable interfaces, and human-readable outputs.
+          ScropIDS reflects this broader understanding and is therefore a valuable case
+          study for security-oriented software engineering.
+        </p>
+
+        <table>
+          <caption>Table 4.1 Discussion summary of ScropIDS characteristics</caption>
+          <thead>
+            <tr>
+              <th>Aspect</th>
+              <th>Observation</th>
+              <th>Discussion</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Telemetry flow</td>
+              <td>Events move from agents to a central API and store</td>
+              <td>Supports consistent analysis compared with host-by-host review</td>
+            </tr>
+            <tr>
+              <td>Aggregation model</td>
+              <td>Scheduler creates time-window summaries</td>
+              <td>Helps reduce alert fatigue and improves contextual triage</td>
+            </tr>
+            <tr>
+              <td>Tenant-aware design</td>
+              <td>Organizations shape access and ownership</td>
+              <td>Essential for safe shared deployment and SaaS-style delivery</td>
+            </tr>
+            <tr>
+              <td>LLM integration</td>
+              <td>Structured reasoning augments rules</td>
+              <td>Useful when validated carefully and treated as advisory</td>
+            </tr>
+            <tr>
+              <td>Deployment model</td>
+              <td>Docker Compose keeps setup reproducible</td>
+              <td>Practical for academic demonstration and pilot environments</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="page chapter-page">
+        <h1>Chapter 5 Conclusion and Future Scope</h1>
+
+        <h2>5.1 Summary of the Seminar Work</h2>
+        <p>
+          This seminar studied ScropIDS as a modern intrusion detection platform that
+          combines endpoint telemetry, cloud-native backend services, scheduled
+          aggregation, rule-assisted escalation, LLM-assisted reasoning, and a web-based
+          dashboard. The work demonstrates how several important software engineering and
+          cybersecurity concepts can be integrated into a single coherent system.
+        </p>
+
+        <h2>5.2 Major Learning Outcomes</h2>
+        <ol>
+          <li>Intrusion detection becomes more practical when telemetry is structured and aggregated before review.</li>
+          <li>Multi-tenant architecture requires early design attention to ownership, authentication, and safe data access.</li>
+          <li>Explainability improves the usefulness of alerts for real human operators.</li>
+          <li>Modern security tools benefit from strong product thinking in addition to detection logic.</li>
+          <li>Cloud-native deployment and modular engineering make academic security systems easier to demonstrate and evolve.</li>
+        </ol>
+
+        <h2>5.3 Conclusion Drawn from the Study</h2>
+        <p>
+          The central conclusion of the study is that ScropIDS is a meaningful and
+          technically grounded seminar topic because it moves beyond isolated log
+          collection or purely conceptual IDS discussion. It demonstrates a complete
+          operational path from data intake to analyst-facing output, while remaining
+          understandable as an academic artifact. The combination of multi-tenancy,
+          scheduler-driven aggregation, explainable alerting, and optional model-assisted
+          reasoning gives it clear practical relevance.
+        </p>
+
+        <h2>5.4 Future Scope</h2>
+        <ul>
+          <li>Deeper endpoint collectors and richer event coverage.</li>
+          <li>MITRE ATT&amp;CK mapping and threat intelligence enrichment.</li>
+          <li>More advanced detection rules and correlation strategies.</li>
+          <li>Expanded dashboard analytics and incident response playbooks.</li>
+          <li>Stronger RBAC and audit trails.</li>
+          <li>Larger-scale deployment validation in more realistic environments.</li>
+        </ul>
+      </section>
+
+      <section class="page appendix">
+        <h1>Professional Profile &amp; Repository Details</h1>
+        <p>
+          Konda Nagendar is a Computer Science and Engineering student with a strong
+          focus on cybersecurity, secure systems, and practical offensive-defensive
+          security workflows. The present seminar report reflects that interest by
+          studying an intrusion detection platform that brings together cloud-native
+          engineering, endpoint telemetry collection, alert triage, and analyst usability.
+          The work demonstrates a strong alignment between software development and
+          security operations.
+        </p>
+
+        <h2>Repository Details</h2>
+        <ul>
+          <li>GitHub Project Repository: <span class="muted">[Add public GitHub repository URL here]</span></li>
+          <li>LinkedIn Profile Link: <span class="muted">[Add LinkedIn profile URL here]</span></li>
+          <li>Project Title in Repository: ScropIDS</li>
+          <li>Repository Structure Covered in the Seminar: <code>backend/</code>, <code>frontend/</code>, <code>agents/go/</code>, <code>docs/</code>, and deployment files</li>
+        </ul>
+      </section>
+
+      <section class="page appendix">
+        <h1>References</h1>
+        <ol>
+          <li>ScropIDS project documentation: <code>README.md</code>, <code>docs/architecture.md</code>, <code>docs/api-contract.md</code>, and <code>docs/start-methods.md</code>.</li>
+          <li>MITRE ATT&amp;CK Framework. Available at: https://attack.mitre.org/</li>
+          <li>SigmaHQ Detection Rules. Available at: https://github.com/SigmaHQ/sigma</li>
+          <li>NIST Cybersecurity Framework 2.0. Available at: https://www.nist.gov/cyberframework</li>
+          <li>Django Documentation. Available at: https://docs.djangoproject.com/</li>
+          <li>Celery Documentation. Available at: https://docs.celeryq.dev/</li>
+          <li>React Documentation. Available at: https://react.dev/</li>
+        </ol>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed
@@ -27,7 +28,7 @@ class AgentTokenAuthentication(authentication.BaseAuthentication):
 
         try:
             agent = Agent.objects.get(pk=agent_id)
-        except Agent.DoesNotExist as exc:
+        except (Agent.DoesNotExist, ValidationError, ValueError, TypeError) as exc:
             raise AuthenticationFailed(_("Invalid agent credentials.")) from exc
 
         if not agent.check_token(token):

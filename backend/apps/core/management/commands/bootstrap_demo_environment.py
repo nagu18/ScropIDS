@@ -35,6 +35,10 @@ class Command(BaseCommand):
         parser.add_argument("--normal-password", default=os.getenv("SCROPIDS_BOOTSTRAP_NORMAL_PASSWORD", "normal"))
         parser.add_argument("--workspace-name", default=os.getenv("SCROPIDS_BOOTSTRAP_WORKSPACE_NAME", "ScropIDS Workspace"))
         parser.add_argument(
+            "--agent-access-token",
+            default=os.getenv("SCROPIDS_BOOTSTRAP_AGENT_ACCESS_TOKEN", ""),
+        )
+        parser.add_argument(
             "--normal-role",
             default=os.getenv("SCROPIDS_BOOTSTRAP_NORMAL_ROLE", MembershipRole.ANALYST),
             choices=MembershipRole.values,
@@ -79,6 +83,7 @@ class Command(BaseCommand):
         normal_password = options["normal_password"]
         workspace_name = options["workspace_name"].strip() or "ScropIDS Workspace"
         workspace_slug = slugify(workspace_name) or "scropids-workspace"
+        agent_access_token = options["agent_access_token"].strip()
         normal_role = options["normal_role"]
         llm_provider_name = options["llm_provider_name"].strip()
         llm_provider_type = options["llm_provider_type"]
@@ -165,7 +170,11 @@ class Command(BaseCommand):
             },
         )
 
-        if not workspace.agent_access_token_encrypted:
+        if agent_access_token:
+            if workspace.get_agent_access_token() != agent_access_token:
+                workspace.set_agent_access_token(agent_access_token)
+                workspace.save(update_fields=["agent_access_token_encrypted", "agent_access_token_rotated_at", "updated_at"])
+        elif not workspace.agent_access_token_encrypted:
             workspace.rotate_agent_access_token()
 
         if llm_provider_name and llm_base_url and llm_model:
@@ -204,3 +213,12 @@ class Command(BaseCommand):
         self.stdout.write(f"Admin user: {admin_username}")
         self.stdout.write(f"Normal user: {normal_username} [{normal_role}]")
         self.stdout.write(f"Agent token ready: {'yes' if workspace.agent_access_token_encrypted else 'no'}")
+        if workspace.agent_access_token_encrypted:
+            agent_token = workspace.get_agent_access_token()
+            self.stdout.write(f"Agent access token: {agent_token}")
+            self.stdout.write("")
+            self.stdout.write("Docker Agent Setup:")
+            self.stdout.write(f"  export SCROPIDS_AGENT_API_BASE=http://backend:8000/api/v1")
+            self.stdout.write(f"  export SCROPIDS_AGENT_ORG_SLUG={workspace.slug}")
+            self.stdout.write(f"  export SCROPIDS_AGENT_ORG_ACCESS_TOKEN={agent_token}")
+            self.stdout.write(f"  docker-compose up agent")

@@ -73,6 +73,25 @@ export function agentApiBaseUrl(): string {
   return "http://localhost:8000/api/v1";
 }
 
+export function browserDownloadUrl(path: string): string {
+  if (/^https?:\/\//i.test(path)) {
+    return path;
+  }
+
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+
+  if (typeof window !== "undefined") {
+    return `${window.location.origin}${normalizedPath}`;
+  }
+
+  if (/^https?:\/\//i.test(RESOLVED_API_BASE_URL)) {
+    const backendBaseUrl = RESOLVED_API_BASE_URL.replace(API_BASE_SUFFIX, "");
+    return `${backendBaseUrl}${normalizedPath}`;
+  }
+
+  return normalizedPath;
+}
+
 export function errorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError<{ detail?: string }>;

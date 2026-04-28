@@ -189,7 +189,7 @@ func main() {
 	}
 
 	runtimeCfg := loadLocalRuntimeDefaults()
-	if remoteCfg, err := fetchRuntimeConfig(cfg.APIBase, cfg.AgentID, cfg.AgentToken); err == nil {
+	if remoteCfg, err := fetchRuntimeConfigWithRecovery(&cfg); err == nil {
 		runtimeCfg = remoteCfg
 		log.Printf(
 			"Loaded scheduler profile from server: event_interval=%s sync_interval=%s",
@@ -205,16 +205,16 @@ func main() {
 	defer sendTicker.Stop()
 	defer syncTicker.Stop()
 
-	sendConfiguredEvents(cfg.APIBase, cfg.AgentID, cfg.AgentToken, runtimeCfg)
-	sendHeartbeat(cfg.APIBase, cfg.AgentID, cfg.AgentToken)
+	sendConfiguredEventsWithRecovery(&cfg, runtimeCfg)
+	sendHeartbeatWithRecovery(&cfg)
 
 	for {
 		select {
 		case <-sendTicker.C:
-			sendConfiguredEvents(cfg.APIBase, cfg.AgentID, cfg.AgentToken, runtimeCfg)
-			sendHeartbeat(cfg.APIBase, cfg.AgentID, cfg.AgentToken)
+			sendConfiguredEventsWithRecovery(&cfg, runtimeCfg)
+			sendHeartbeatWithRecovery(&cfg)
 		case <-syncTicker.C:
-			nextCfg, err := fetchRuntimeConfig(cfg.APIBase, cfg.AgentID, cfg.AgentToken)
+			nextCfg, err := fetchRuntimeConfigWithRecovery(&cfg)
 			if err != nil {
 				log.Printf("runtime config refresh failed: %v", err)
 				continue
@@ -423,22 +423,20 @@ func quickEnrollAgent(apiBase string, payload QuickEnrollRequest) (*EnrollmentRe
 	return &output, nil
 }
 
-func sendConfiguredEvents(apiBase, agentID, agentToken string, cfg AgentRuntime) {
+func sendConfiguredEvents(apiBase, agentID, agentToken string, cfg AgentRuntime) error {
 	events := buildEvents(cfg)
 	if len(events) == 0 {
 		log.Printf("all collectors disabled by scheduler profile")
-		return
+		return nil
 	}
 
 	body, err := json.Marshal(EventBatch{Events: events})
 	if err != nil {
-		log.Printf("marshal error: %v", err)
-		return
+		return fmt.Errorf("marshal error: %w", err)
 	}
 	req, err := http.NewRequest(http.MethodPost, strings.TrimRight(apiBase, "/")+"/ingest/events/", bytes.NewBuffer(body))
 	if err != nil {
-		log.Printf("request build error: %v", err)
-		return
+		return fmt.Errorf("request build error: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Agent-ID", agentID)
@@ -447,15 +445,14 @@ func sendConfiguredEvents(apiBase, agentID, agentToken string, cfg AgentRuntime)
 	client := &http.Client{Timeout: 15 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("send error: %v", err)
-		return
+		return fmt.Errorf("send error: %w", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode >= 300 {
-		log.Printf("backend rejected event batch: %v", readHTTPError(resp, "ingest"))
-		return
+		return readHTTPError(resp, "ingest")
 	}
 	log.Printf("event batch sent status=%d count=%d", resp.StatusCode, len(events))
+	return nil
 }
 
 func buildEvents(cfg AgentRuntime) []Event {
@@ -698,11 +695,10 @@ func shellQuote(path string) string {
 	return "'" + strings.ReplaceAll(path, "'", "'\"'\"'") + "'"
 }
 
-func sendHeartbeat(apiBase, agentID, agentToken string) {
+func sendHeartbeat(apiBase, agentID, agentToken string) error {
 	req, err := http.NewRequest(http.MethodPost, strings.TrimRight(apiBase, "/")+"/ingest/heartbeat/", bytes.NewBufferString("{}"))
 	if err != nil {
-		log.Printf("heartbeat request build error: %v", err)
-		return
+		return fmt.Errorf("heartbeat request build error: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Agent-ID", agentID)
@@ -711,13 +707,13 @@ func sendHeartbeat(apiBase, agentID, agentToken string) {
 	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("heartbeat error: %v", err)
-		return
+		return fmt.Errorf("heartbeat error: %w", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode >= 300 {
-		log.Printf("heartbeat rejected: %v", readHTTPError(resp, "heartbeat"))
+		return readHTTPError(resp, "heartbeat")
 	}
+	return nil
 }
 
 func loadConfig() (AgentConfig, error) {
@@ -851,6 +847,164 @@ func printBanner() {
 	fmt.Println("====================================")
 	fmt.Println("        ScropIDS Agent")
 	fmt.Println("====================================")
+}
+
+func fetchRuntimeConfigWithRecovery(cfg *AgentConfig) (AgentRuntime, error) {
+	var runtimeCfg AgentRuntime
+	err := withCredentialRecovery(cfg, func() error {
+		nextCfg, err := fetchRuntimeConfig(cfg.APIBase, cfg.AgentID, cfg.AgentToken)
+		if err != nil {
+			return err
+		}
+		runtimeCfg = nextCfg
+		return nil
+	})
+	return runtimeCfg, err
+}
+
+func sendConfiguredEventsWithRecovery(cfg *AgentConfig, runtimeCfg AgentRuntime) {
+	if err := withCredentialRecovery(cfg, func() error {
+		return sendConfiguredEvents(cfg.APIBase, cfg.AgentID, cfg.AgentToken, runtimeCfg)
+	}); err != nil {
+		log.Printf("backend rejected event batch: %v", err)
+	}
+}
+
+func sendHeartbeatWithRecovery(cfg *AgentConfig) {
+	if err := withCredentialRecovery(cfg, func() error {
+		return sendHeartbeat(cfg.APIBase, cfg.AgentID, cfg.AgentToken)
+	}); err != nil {
+		log.Printf("heartbeat rejected: %v", err)
+	}
+}
+
+func withCredentialRecovery(cfg *AgentConfig, action func() error) error {
+	err := action()
+	if err == nil {
+		return nil
+	}
+	if !isInvalidAgentCredentialError(err) {
+		return err
+	}
+
+	recovered, recoverErr := recoverAgentCredentials(cfg)
+	if recoverErr != nil {
+		repaired, repairErr := tryInteractiveRepair(cfg, recoverErr)
+		if repairErr != nil {
+			return fmt.Errorf("invalid agent credentials and automatic recovery failed: %w", repairErr)
+		}
+		if repaired {
+			return action()
+		}
+		return fmt.Errorf("invalid agent credentials and automatic recovery failed: %w", recoverErr)
+	}
+	if !recovered {
+		repaired, repairErr := tryInteractiveRepair(cfg, err)
+		if repairErr != nil {
+			return fmt.Errorf("invalid agent credentials and interactive repair failed: %w", repairErr)
+		}
+		if repaired {
+			return action()
+		}
+		return err
+	}
+	return action()
+}
+
+func recoverAgentCredentials(cfg *AgentConfig) (bool, error) {
+	orgSlug := firstNonEmpty(os.Getenv("SCROPIDS_ORG_SLUG"), cfg.OrganizationSlug, defaultOrgSlug)
+	orgAccessToken := firstNonEmpty(os.Getenv("SCROPIDS_ORG_ACCESS_TOKEN"), cfg.OrgAccessToken, defaultOrgAccessToken)
+	if orgSlug == "" || orgAccessToken == "" {
+		return false, nil
+	}
+
+	hostname := firstNonEmpty(os.Getenv("SCROPIDS_HOSTNAME"), cfg.Hostname, hostOrFallback())
+	ipAddress := firstNonEmpty(os.Getenv("SCROPIDS_IP_ADDRESS"), cfg.IPAddress)
+
+	log.Printf(
+		"agent credentials rejected by backend; attempting automatic re-enrollment for tenant=%s hostname=%s",
+		orgSlug,
+		hostname,
+	)
+
+	enrollResp, err := quickEnrollAgent(cfg.APIBase, QuickEnrollRequest{
+		OrganizationSlug: orgSlug,
+		AccessToken:      orgAccessToken,
+		Hostname:         hostname,
+		OperatingSystem:  runtime.GOOS,
+		IPAddress:        ipAddress,
+	})
+	if err != nil {
+		return false, err
+	}
+
+	cfg.AgentID = enrollResp.AgentID
+	cfg.AgentToken = enrollResp.AgentToken
+	cfg.OrganizationSlug = enrollResp.OrganizationSlug
+	cfg.OrgAccessToken = orgAccessToken
+	cfg.Hostname = hostname
+	cfg.IPAddress = ipAddress
+
+	if err := saveConfig(*cfg); err != nil {
+		log.Printf("warning: unable to save recovered config: %v", err)
+	}
+
+	log.Printf(
+		"automatic re-enrollment complete for tenant=%s agent_id=%s",
+		enrollResp.OrganizationSlug,
+		enrollResp.AgentID,
+	)
+	return true, nil
+}
+
+func tryInteractiveRepair(cfg *AgentConfig, cause error) (bool, error) {
+	if !isInteractiveShell() {
+		return false, nil
+	}
+
+	fmt.Println()
+	fmt.Println("Saved ScropIDS agent credentials are no longer valid.")
+	if cause != nil {
+		fmt.Printf("Reason: %v\n", cause)
+	}
+	fmt.Println("Run the setup wizard now to refresh this endpoint and continue.")
+	fmt.Println()
+
+	repairedCfg := *cfg
+	repairedCfg.AgentID = ""
+	repairedCfg.AgentToken = ""
+	if isInvalidOrgAccessTokenError(cause) {
+		repairedCfg.OrgAccessToken = ""
+		fmt.Println("The saved organization access token is no longer valid.")
+		fmt.Println("Copy the current token from the Agents page, then paste it below.")
+		fmt.Println()
+	}
+
+	nextCfg, err := setupWizard(repairedCfg)
+	if err != nil {
+		return false, err
+	}
+	*cfg = nextCfg
+
+	if err := saveConfig(*cfg); err != nil {
+		log.Printf("warning: unable to save repaired config: %v", err)
+	}
+
+	return true, nil
+}
+
+func isInvalidAgentCredentialError(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.Contains(strings.ToLower(err.Error()), "invalid agent credentials")
+}
+
+func isInvalidOrgAccessTokenError(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.Contains(strings.ToLower(err.Error()), "invalid organization access token")
 }
 
 type httpStatusError struct {

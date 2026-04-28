@@ -53,6 +53,26 @@ docker compose ps
 docker compose down
 ```
 
+## Running the Agent in Docker
+
+After bootstrap completes, you'll see the agent access token in the logs. Start the agent service:
+
+```bash
+# 1. Check bootstrap output for the agent access token:
+docker compose logs backend | grep -A 5 "Docker Agent Setup"
+
+# 2. Set the environment variables (or update .env):
+export SCROPIDS_AGENT_ORG_ACCESS_TOKEN="<token-from-bootstrap>"
+export SCROPIDS_AGENT_API_BASE=http://backend:8000/api/v1
+export SCROPIDS_AGENT_ORG_SLUG=scropids-workspace
+
+# 3. Start the agent service:
+docker compose up -d agent
+
+# 4. Watch agent logs:
+docker compose logs -f agent
+```
+
 If you want a clean seeded environment again on next boot:
 
 ```bash

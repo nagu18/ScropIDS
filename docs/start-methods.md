@@ -20,12 +20,14 @@ On first boot, the packaged demo environment creates:
 - normal user: `normal / normal`
 - one default scheduler profile
 - one organization agent access token
+- default demo agent token: `scropids-demo-agent-access-token`
 - one LLM provider record: `OpenRouter Gemma 4 31B Free`
 
 Important note:
 
 - the OpenRouter provider record is created automatically
 - it is only active if `SCROPIDS_BOOTSTRAP_LLM_API_KEY` is set at startup
+- the Docker demo keeps the same organization agent token by default, so agents can auto-recover after a clean reset
 
 ## Main URLs
 
@@ -60,6 +62,10 @@ This starts:
 - `worker`
 - `beat`
 - `frontend`
+
+The default demo agent token is:
+
+- `scropids-demo-agent-access-token`
 
 ### Verify
 
@@ -170,6 +176,10 @@ This will pull or use:
 - `nagu2004/scropids-backend:latest`
 - `nagu2004/scropids-frontend:latest`
 
+The default demo agent token is:
+
+- `scropids-demo-agent-access-token`
+
 ### Verify
 
 ```bash
@@ -277,6 +287,7 @@ docker run -d \
   -e SCROPIDS_BOOTSTRAP_NORMAL_USERNAME=normal \
   -e SCROPIDS_BOOTSTRAP_NORMAL_PASSWORD=normal \
   -e SCROPIDS_BOOTSTRAP_WORKSPACE_NAME="ScropIDS Workspace" \
+  -e SCROPIDS_BOOTSTRAP_AGENT_ACCESS_TOKEN="scropids-demo-agent-access-token" \
   -e SCROPIDS_BOOTSTRAP_NORMAL_ROLE=analyst \
   -e SCROPIDS_BOOTSTRAP_LLM_PROVIDER_NAME="OpenRouter Gemma 4 31B Free" \
   -e SCROPIDS_BOOTSTRAP_LLM_PROVIDER_TYPE=openai_compatible \
@@ -290,6 +301,12 @@ If you want OpenRouter active immediately, add:
 
 ```bash
 -e SCROPIDS_BOOTSTRAP_LLM_API_KEY="your_openrouter_key"
+```
+
+If you want your own fixed workspace token instead of the demo token, replace:
+
+```bash
+-e SCROPIDS_BOOTSTRAP_AGENT_ACCESS_TOKEN="scropids-demo-agent-access-token"
 ```
 
 ### Step 6: Verify Backend Startup
@@ -536,6 +553,8 @@ After login as `admin`:
 4. use the generated one-line command to connect a real endpoint agent
 
 The packaged Docker demo includes the built agent artifacts already.
+
+If an older saved agent config becomes stale after a rebuild, running the agent again will either re-enroll automatically or reopen the terminal setup wizard.
 
 ## Troubleshooting
 

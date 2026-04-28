@@ -516,7 +516,7 @@ class AgentDownloadManifestView(APIView):
                         "package_type": package_type,
                         "size_bytes": file_path.stat().st_size,
                         "sha256": self._sha256(file_path),
-                        "download_path": f"/api/v1/agent-downloads/{file_path.name}/",
+                        "download_path": f"/api/v1/agent-downloads/{file_path.name}",
                     }
                 )
         return Response({"artifacts": artifacts})

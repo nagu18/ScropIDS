@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { agentApiBaseUrl, api, errorMessage, getActiveOrgSlug } from "@/lib/api";
+import { agentApiBaseUrl, api, browserDownloadUrl, errorMessage, getActiveOrgSlug } from "@/lib/api";
 import { formatRelative } from "@/lib/utils";
 import type { Agent, AgentArtifact, AgentArtifactManifest } from "@/types/api";
 
@@ -167,26 +167,22 @@ export function AgentsPage() {
     toast.success(`${label} copied.`);
   };
 
-  const downloadArtifact = async (artifact: AgentArtifact) => {
+  const downloadArtifact = (artifact: AgentArtifact) => {
     setDownloading(artifact.filename);
     try {
-      const normalizedPath = artifact.download_path.startsWith("/api/v1/")
-        ? artifact.download_path.replace("/api/v1", "")
-        : artifact.download_path;
-      const response = await api.get<Blob>(normalizedPath, { responseType: "blob" });
-      const url = window.URL.createObjectURL(response.data);
+      const url = browserDownloadUrl(artifact.download_path);
       const anchor = document.createElement("a");
       anchor.href = url;
       anchor.download = artifact.filename;
+      anchor.rel = "noopener";
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
-      window.URL.revokeObjectURL(url);
-      toast.success(`Downloaded ${artifact.filename}`);
+      toast.success(`Started download for ${artifact.filename}`);
     } catch (error) {
       toast.error(errorMessage(error));
     } finally {
-      setDownloading(null);
+      window.setTimeout(() => setDownloading(null), 250);
     }
   };
 
@@ -330,7 +326,7 @@ export function AgentsPage() {
               disabled={!recommendedArtifact || downloading !== null}
               onClick={() => {
                 if (recommendedArtifact) {
-                  void downloadArtifact(recommendedArtifact);
+                  downloadArtifact(recommendedArtifact);
                 }
               }}
             >
@@ -344,6 +340,9 @@ export function AgentsPage() {
             ) : null}
             <p className="text-xs text-muted">
               Tip: the download is a generic agent package. Use the copied command above or run interactive setup to connect it to this workspace.
+            </p>
+            <p className="text-xs text-muted">
+              If you already launched an older agent build, running it again will try to re-enroll automatically. If the saved token is stale, the setup wizard will reopen in the terminal.
             </p>
           </CardContent>
         </Card>
@@ -387,7 +386,7 @@ export function AgentsPage() {
                           size="sm"
                           variant="outline"
                           disabled={downloading === artifact.filename}
-                          onClick={() => void downloadArtifact(artifact)}
+                          onClick={() => downloadArtifact(artifact)}
                         >
                           <Download className="mr-2 h-3.5 w-3.5" />
                           {downloading === artifact.filename ? "Downloading..." : "Download"}

@@ -6,6 +6,7 @@ from django.core.management import call_command
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
+from rest_framework.exceptions import AuthenticationFailed
 
 from .models import (
     Alert,
@@ -18,6 +19,7 @@ from .models import (
     SchedulerConfig,
     Severity,
 )
+from .authentication import AgentTokenAuthentication
 from .services.pipeline import aggregate_events, analyze_pending_aggregates
 
 
@@ -35,6 +37,17 @@ class AgentModelTests(TestCase):
 
         self.assertTrue(agent.check_token(token))
         self.assertFalse(agent.check_token("invalid-token"))
+
+    def test_invalid_agent_id_header_returns_auth_failure(self):
+        class DummyRequest:
+            META = {
+                "HTTP_X_AGENT_ID": "not-a-uuid",
+                "HTTP_X_AGENT_TOKEN": "bad-token",
+            }
+
+        auth = AgentTokenAuthentication()
+        with self.assertRaises(AuthenticationFailed):
+            auth.authenticate(DummyRequest())
 
 
 class AggregatePipelineTests(TestCase):
@@ -122,6 +135,8 @@ class BootstrapDemoEnvironmentTests(TestCase):
             "bootstrap_demo_environment",
             "--force-reset",
             "True",
+            "--agent-access-token",
+            "stable-demo-agent-token",
             "--llm-api-key",
             "demo-key",
         )
@@ -147,7 +162,7 @@ class BootstrapDemoEnvironmentTests(TestCase):
             OrganizationMembership.objects.get(user=normal_user, organization=workspace).role,
             MembershipRole.ANALYST,
         )
-        self.assertTrue(workspace.get_agent_access_token())
+        self.assertEqual(workspace.get_agent_access_token(), "stable-demo-agent-token")
         self.assertTrue(scheduler.is_active)
         self.assertEqual(provider.provider_type, "openai_compatible")
         self.assertEqual(provider.base_url, "https://openrouter.ai/api/v1")
